@@ -20,27 +20,30 @@ def analyze(ticker: str):
     fmp_response = requests.get(fmp_url)
     market_data = fmp_response.json()
 
-    prompt = f"""
-Analyse l'actif {ticker} à partir des données marché suivantes :
+   prompt = f"""
+Tu es un analyste financier professionnel.
+
+Analyse l'actif {ticker} à partir des données de marché fournies.
+
+Structure la réponse en 4 parties :
+
+1. Situation actuelle de l'actif
+2. Principaux risques et points de vigilance
+3. Facteurs pouvant soutenir une hausse
+4. Facteurs pouvant peser sur le cours
+
+Reste factuel, clair et pédagogique pour un investisseur non expert.
+
+Ne donne jamais de conseil d'achat ou de vente.
+Ne recommande jamais d'investir.
+
+Les investisseurs devront surveiller :
+- les risques de volatilité,
+- les résultats financiers,
+- les tendances sectorielles,
+- le contexte macroéconomique,
+- les mouvements du marché.
+
+Données marché :
 {market_data}
-
-Explique clairement les risques actuels, la variation récente, le volume, la capitalisation si disponible.
-Réponse en français, maximum 150 mots.
-Ne donne pas de conseil d'achat ou de vente.
 """
-
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "Tu es un analyste financier. Tu expliques simplement les risques pour un investisseur non expert."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=220,
-        temperature=0.4
-    )
-
-    return {
-        "ticker": ticker,
-        "market_data": market_data,
-        "analysis": completion.choices[0].message.content
-    }
