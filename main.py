@@ -20,29 +20,39 @@ def analyze(ticker: str):
     fmp_response = requests.get(fmp_url)
     market_data = fmp_response.json()
 
-   prompt = f"""
+  prompt = f"""
 Tu es un analyste financier professionnel.
 
 Analyse l'actif {ticker} à partir des données de marché fournies.
 
-Structure la réponse en 4 parties :
+Ta réponse DOIT respecter STRICTEMENT ce format :
 
-1. Situation actuelle de l'actif
-2. Principaux risques et points de vigilance
-3. Facteurs pouvant soutenir une hausse
-4. Facteurs pouvant peser sur le cours
+1. Situation actuelle
+- résumé de la situation du titre
+- tendance récente
+- éléments importants du marché
 
-Reste factuel, clair et pédagogique pour un investisseur non expert.
+2. Risques et vigilance
+- principaux risques
+- volatilité
+- éléments à surveiller
 
-Ne donne jamais de conseil d'achat ou de vente.
-Ne recommande jamais d'investir.
+3. Facteurs favorables
+- éléments pouvant soutenir une hausse
+- tendances positives
+- facteurs de croissance
 
-Les investisseurs devront surveiller :
-- les risques de volatilité,
-- les résultats financiers,
-- les tendances sectorielles,
-- le contexte macroéconomique,
-- les mouvements du marché.
+4. Facteurs défavorables
+- éléments pouvant peser sur le cours
+- risques de baisse
+- contexte négatif possible
+
+Contraintes :
+- maximum 220 mots
+- ton professionnel et pédagogique
+- aucune recommandation d'achat ou de vente
+- ne jamais dire "il faut acheter"
+- ne jamais dire "il faut vendre"
 
 Données marché :
 {market_data}
