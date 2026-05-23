@@ -37,23 +37,23 @@ def analyze(ticker: str):
         "interest_rate_sensitivity": "",
         "portfolio_role": "",
         "market_tension": ""
-    })
+    }
 
-    try:
-        profile = company_profile[0]
-    except:
-        profile = {}
+    def safe_float(value, default=0):
+        try:
+            if value is None:
+                return default
+            return float(value)
+        except Exception:
+            return default
 
-    try:
-        quote = market_data[0]
-    except:
-        quote = {}
+    profile = company_profile[0] if isinstance(company_profile, list) and len(company_profile) > 0 else {}
+    quote = market_data[0] if isinstance(market_data, list) and len(market_data) > 0 else {}
 
-    beta = profile.get("beta", 1)
-    sector = profile.get("sector", "")
-    change = quote.get("changesPercentage", 0)
+    beta = safe_float(profile.get("beta"), 1)
+    sector = profile.get("sector") or ""
+    change = safe_float(quote.get("changesPercentage"), 0)
 
-    # Market tension
     if abs(change) > 5:
         signals["market_tension"] = "élevée"
     elif abs(change) > 2:
@@ -61,7 +61,6 @@ def analyze(ticker: str):
     else:
         signals["market_tension"] = "faible"
 
-    # Interest rate sensitivity
     if sector in ["Technology", "Communication Services"]:
         signals["interest_rate_sensitivity"] = "élevée"
     elif sector in ["Utilities", "Consumer Defensive"]:
@@ -69,37 +68,35 @@ def analyze(ticker: str):
     else:
         signals["interest_rate_sensitivity"] = "modérée"
 
-    # Portfolio role
     if sector == "Technology":
         signals["portfolio_role"] = "croissance"
     elif sector == "Energy":
         signals["portfolio_role"] = "cyclique"
     elif sector == "Financial Services":
         signals["portfolio_role"] = "exposition financière"
-    elif sector == "Industrials":
+    elif sector in ["Industrials", "Aerospace & Defense"]:
         signals["portfolio_role"] = "industrie / défense"
     else:
         signals["portfolio_role"] = "diversification"
 
-    # Short-term risk
-    if beta and beta > 1.5:
+    if beta > 1.5:
         signals["risk_short_term"] = "élevé"
-    elif beta and beta > 1:
+    elif beta > 1:
         signals["risk_short_term"] = "modéré"
     else:
         signals["risk_short_term"] = "faible"
 
-    # Long-term risk
     if sector in ["Technology", "Communication Services"]:
         signals["risk_long_term"] = "modéré"
     else:
         signals["risk_long_term"] = "faible"
 
-    # Market profile
-    if beta and beta > 1.5:
+    if beta > 1.5:
         signals["market_profile"] = "croissance volatile"
+    elif beta > 1:
+        signals["market_profile"] = "cyclique / sensible au marché"
     else:
-        signals["market_profile"] = "profil stable"
+        signals["market_profile"] = "profil plus défensif ou stable"
 
     prompt = f"""
     Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
