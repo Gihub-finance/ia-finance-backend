@@ -72,36 +72,35 @@ def analyze(ticker: str):
         "risk_long_term": "modéré" if sector in ["Technology", "Communication Services"] else "faible",
         "market_profile": "croissance volatile" if beta > 1.5 else "cyclique / sensible au marché" if beta > 1 else "profil plus défensif ou stable"
     }
-        # Financial strength
-        if roe > 0.20 and net_margin > 0.20:
+            # Financial strength
+    if roe > 0.20 and net_margin > 0.20:
         signals["financial_strength"] = "très solide"
-        elif roe > 0.10:
+    elif roe > 0.10:
         signals["financial_strength"] = "correcte"
-        else:
+    else:
         signals["financial_strength"] = "fragile ou cyclique"
 
-        # Valuation pressure
-        if pe_ratio > 40:
+    # Valuation pressure
+    if pe_ratio > 40:
         signals["valuation_pressure"] = "valorisation élevée"
-        elif pe_ratio > 25:
+    elif pe_ratio > 25:
         signals["valuation_pressure"] = "valorisation modérée"
-        else:
+    else:
         signals["valuation_pressure"] = "valorisation raisonnable"
 
-        # Growth dependency
-        if sector == "Technology":
+    # Growth dependency
+    if sector == "Technology":
         signals["growth_dependency"] = "forte dépendance à la croissance"
-        else:
+    else:
         signals["growth_dependency"] = "dépendance modérée à la croissance"
 
-        # Cashflow quality
-        if free_cash_flow_yield > 0.05:
+    # Cashflow quality
+    if free_cash_flow_yield > 0.05:
         signals["cashflow_quality"] = "génération de cash robuste"
-        elif free_cash_flow_yield > 0:
+    elif free_cash_flow_yield > 0:
         signals["cashflow_quality"] = "cashflow correct"
-        else:
+    else:
         signals["cashflow_quality"] = "cashflow sous pression"
-    }
 
     prompt = f"""
     Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
