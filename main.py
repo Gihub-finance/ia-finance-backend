@@ -81,21 +81,21 @@ def analyze(ticker: str):
 
     Données disponibles :
 
-Données marché temps réel :
-{market_data}
+    Données marché temps réel :
+    {market_data}
 
-Profil société :
-{company_profile}
+    Profil société :
+    {company_profile}
 
-Ratios financiers TTM :
-{ratios_ttm}
+    Ratios financiers TTM :
+    {ratios_ttm}
 
-Indicateurs fondamentaux TTM :
-{key_metrics_ttm}
+    Indicateurs fondamentaux TTM :
+    {key_metrics_ttm}
 
-Estimations analystes :
-{analyst_estimates}
-"""
+    Estimations analystes :
+    {analyst_estimates}
+    """
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
