@@ -106,7 +106,7 @@ def analyze(ticker: str):
             },
             {
                 "role": "user",
-                "content": prompt
+                "content": "Analyse l'action <ticker> à partir des données suivantes : <marketData>.\n\nStructure la réponse ainsi :\n\n1. Situation actuelle\n- prix actuel\n- dynamique récente\n- volatilité\n\n2. Sensibilités clés\n- résultats financiers\n- IA / semi-conducteurs\n- macro / taux\n- géopolitique si pertinent\n\n3. Positionnement portefeuille\n- croissance\n- volatilité\n- diversification\n- exposition sectorielle\n\n4. Horizon de lecture\n- court terme\n- moyen terme\n- long terme\n\n5. Points de vigilance\n\nContraintes :\n- ton professionnel\n- synthétique\n- utile\n- sans conseil d'achat ou vente\n- exploite explicitement les données fournies\n- ne jamais dire que les données sont indisponibles"
             }
         ],
         max_tokens=350,
