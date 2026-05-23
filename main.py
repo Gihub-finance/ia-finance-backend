@@ -71,6 +71,7 @@ def analyze(ticker: str):
         "risk_short_term": "élevé" if beta > 1.5 else "modéré" if beta > 1 else "faible",
         "risk_long_term": "modéré" if sector in ["Technology", "Communication Services"] else "faible",
         "market_profile": "croissance volatile" if beta > 1.5 else "cyclique / sensible au marché" if beta > 1 else "profil plus défensif ou stable"
+    }
         # Financial strength
         if roe > 0.20 and net_margin > 0.20:
         signals["financial_strength"] = "très solide"
