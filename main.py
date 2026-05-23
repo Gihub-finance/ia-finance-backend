@@ -113,7 +113,7 @@ def analyze(ticker: str):
         temperature=0.3
     )
 
-     return {
+    return {
         "ticker": ticker,
         "market_data": market_data,
         "company_profile": company_profile,
