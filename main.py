@@ -48,69 +48,112 @@ def analyze(ticker: str):
     sector = profile.get("sector") or ""
     industry = profile.get("industry") or ""
     change = safe_float(quote.get("changesPercentage"), 0)
+    ratios = ratios_ttm[0] if isinstance(ratios_ttm, list) and len(ratios_ttm) > 0 else {}
+    metrics = key_metrics_ttm[0] if isinstance(key_metrics_ttm, list) and len(key_metrics_ttm) > 0 else {}
+
+    pe_ratio = safe_float(ratios.get("priceEarningsRatioTTM"), 0)
+    net_margin = safe_float(ratios.get("netProfitMarginTTM"), 0)
+    roe = safe_float(ratios.get("returnOnEquityTTM"), 0)
+    free_cash_flow_yield = safe_float(metrics.get("freeCashFlowYieldTTM"), 0)
 
     signals = {
         "sector": sector,
         "industry": industry,
         "market_tension": "élevée" if abs(change) > 5 else "modérée" if abs(change) > 2 else "faible",
+
+        "financial_strength": "",
+        "valuation_pressure": "",
+        "growth_dependency": "",
+        "cashflow_quality": "",
+        
         "interest_rate_sensitivity": "élevée" if sector in ["Technology", "Communication Services"] else "faible" if sector in ["Utilities", "Consumer Defensive"] else "modérée",
         "portfolio_role": "croissance" if sector == "Technology" else "cyclique" if sector == "Energy" else "exposition financière" if sector == "Financial Services" else "industrie / défense" if "Defense" in industry else "diversification",
         "risk_short_term": "élevé" if beta > 1.5 else "modéré" if beta > 1 else "faible",
         "risk_long_term": "modéré" if sector in ["Technology", "Communication Services"] else "faible",
         "market_profile": "croissance volatile" if beta > 1.5 else "cyclique / sensible au marché" if beta > 1 else "profil plus défensif ou stable"
+        # Financial strength
+        if roe > 0.20 and net_margin > 0.20:
+        signals["financial_strength"] = "très solide"
+        elif roe > 0.10:
+        signals["financial_strength"] = "correcte"
+        else:
+        signals["financial_strength"] = "fragile ou cyclique"
+
+        # Valuation pressure
+        if pe_ratio > 40:
+        signals["valuation_pressure"] = "valorisation élevée"
+        elif pe_ratio > 25:
+        signals["valuation_pressure"] = "valorisation modérée"
+        else:
+        signals["valuation_pressure"] = "valorisation raisonnable"
+
+        # Growth dependency
+        if sector == "Technology":
+        signals["growth_dependency"] = "forte dépendance à la croissance"
+        else:
+        signals["growth_dependency"] = "dépendance modérée à la croissance"
+
+        # Cashflow quality
+        if free_cash_flow_yield > 0.05:
+        signals["cashflow_quality"] = "génération de cash robuste"
+        elif free_cash_flow_yield > 0:
+        signals["cashflow_quality"] = "cashflow correct"
+        else:
+        signals["cashflow_quality"] = "cashflow sous pression"
     }
 
     prompt = f"""
-Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
+    Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
 
-Analyse l'actif {ticker} à partir des données disponibles.
+    Analyse l'actif {ticker} à partir des données disponibles.
 
-Signaux IA calculés :
-{signals}
+    Signaux IA calculés :
+    {signals}
 
-Données marché :
-{market_data}
+    Données marché :
+    {market_data}
 
-Profil société :
-{company_profile}
+    Profil société :
+    {company_profile}
 
-Ratios financiers TTM :
-{ratios_ttm}
+    Ratios financiers TTM :
+    {ratios_ttm}
 
-Indicateurs fondamentaux TTM :
-{key_metrics_ttm}
+    Indicateurs fondamentaux TTM :
+    {key_metrics_ttm}
 
-Estimations analystes :
-{analyst_estimates}
+    Estimations analystes :
+    {analyst_estimates}
 
-Ta réponse DOIT respecter STRICTEMENT cette structure :
+    Ta réponse DOIT respecter STRICTEMENT cette structure :
 
-1. Situation actuelle de l'action
-Explique la dynamique récente du titre et ce que le marché semble intégrer.
+    1. Situation actuelle de l'action
+    Explique la dynamique récente du titre et ce que le marché semble intégrer.
 
-2. Sensibilités clés
-Explique à quoi l'action est principalement sensible.
+    2. Sensibilités clés
+    Explique à quoi l'action est principalement sensible.
 
-3. Niveau de risque court / moyen / long terme
-Décompose le risque : court terme, moyen terme, long terme.
+    3. Niveau de risque court / moyen / long terme
+    Décompose le risque : court terme, moyen terme, long terme.
 
-4. Rôle possible dans un portefeuille
-Explique ce que l'action peut représenter dans une allocation et quel risque elle ajoute.
+    4. Rôle possible dans un portefeuille
+    Explique ce que l'action peut représenter dans une allocation et quel risque elle ajoute.
 
-5. Horizon de lecture
-Indique si l'actif se comprend plutôt à court terme, moyen terme ou long terme, sans recommander.
+    5. Horizon de lecture
+    Indique si l'actif se comprend plutôt à court terme, moyen terme ou long terme, sans recommander.
 
-6. Points de vigilance
-Liste les éléments à surveiller dans les prochains mois.
+    6. Points de vigilance
+     
+    Liste les éléments à surveiller dans les prochains mois.
 
-Contraintes :
-- Réponds en français.
-- Maximum 450 mots.
-- Ton professionnel, clair et pédagogique.
-- Ne donne jamais de conseil d'achat ou de vente.
-- Ne fais aucune promesse de performance.
-- Sois concret et évite les généralités.
-"""
+    Contraintes :
+    - Réponds en français.
+    - Maximum 450 mots.
+    - Ton professionnel, clair et pédagogique.
+    - Ne donne jamais de conseil d'achat ou de vente.
+    - Ne fais aucune promesse de performance.
+    - Sois concret et évite les généralités.
+    """
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
