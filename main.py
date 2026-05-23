@@ -30,7 +30,76 @@ def analyze(ticker: str):
     company_profile = fmp_get("profile", f"symbol={ticker}")
     ratios_ttm = fmp_get("ratios-ttm", f"symbol={ticker}")
     key_metrics_ttm = fmp_get("key-metrics-ttm", f"symbol={ticker}")
-    analyst_estimates = fmp_get("analyst-estimates", f"symbol={ticker}&period=annual&page=0&limit=3")
+    analyst_estimates = fmp_get(    signals = {
+        "market_profile": "",
+        "risk_short_term": "",
+        "risk_long_term": "",
+        "interest_rate_sensitivity": "",
+        "portfolio_role": "",
+        "market_tension": ""
+    }
+
+    try:
+        profile = company_profile[0]
+    except:
+        profile = {}
+
+    try:
+        quote = market_data[0]
+    except:
+        quote = {}
+
+    beta = profile.get("beta", 1)
+    sector = profile.get("sector", "")
+    change = quote.get("changesPercentage", 0)
+
+    # Market tension
+    if abs(change) > 5:
+        signals["market_tension"] = "élevée"
+    elif abs(change) > 2:
+        signals["market_tension"] = "modérée"
+    else:
+        signals["market_tension"] = "faible"
+
+    # Interest rate sensitivity
+    if sector in ["Technology", "Communication Services"]:
+        signals["interest_rate_sensitivity"] = "élevée"
+    elif sector in ["Utilities", "Consumer Defensive"]:
+        signals["interest_rate_sensitivity"] = "faible"
+    else:
+        signals["interest_rate_sensitivity"] = "modérée"
+
+    # Portfolio role
+    if sector == "Technology":
+        signals["portfolio_role"] = "croissance"
+    elif sector == "Energy":
+        signals["portfolio_role"] = "cyclique"
+    elif sector == "Financial Services":
+        signals["portfolio_role"] = "exposition financière"
+    elif sector == "Industrials":
+        signals["portfolio_role"] = "industrie / défense"
+    else:
+        signals["portfolio_role"] = "diversification"
+
+    # Short-term risk
+    if beta and beta > 1.5:
+        signals["risk_short_term"] = "élevé"
+    elif beta and beta > 1:
+        signals["risk_short_term"] = "modéré"
+    else:
+        signals["risk_short_term"] = "faible"
+
+    # Long-term risk
+    if sector in ["Technology", "Communication Services"]:
+        signals["risk_long_term"] = "modéré"
+    else:
+        signals["risk_long_term"] = "faible"
+
+    # Market profile
+    if beta and beta > 1.5:
+        signals["market_profile"] = "croissance volatile"
+    else:
+        signals["market_profile"] = "profil stable"
 
     prompt = f"""
     Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
@@ -79,7 +148,8 @@ def analyze(ticker: str):
     - Évite les généralités.
     - Explique les mécanismes derrière les chiffres.
 
-    Données disponibles :
+    Données disponibles : Signaux IA calculés :
+    {signals}
 
     Données marché temps réel :
     {market_data}
