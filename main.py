@@ -18,9 +18,19 @@ def home():
 
 @app.get("/analyze")
 def analyze(ticker: str):
-    fmp_url = f"https://financialmodelingprep.com/stable/quote?symbol={ticker}&apikey={FMP_API_KEY}"
-    fmp_response = requests.get(fmp_url)
-    market_data = fmp_response.json()
+    def fmp_get(endpoint: str, params: str = ""):
+        url = f"https://financialmodelingprep.com/stable/{endpoint}?{params}&apikey={FMP_API_KEY}"
+        response = requests.get(url, timeout=20)
+        try:
+            return response.json()
+        except Exception:
+            return {"error": "Invalid FMP response", "raw": response.text}
+
+    market_data = fmp_get("quote", f"symbol={ticker}")
+    company_profile = fmp_get("profile", f"symbol={ticker}")
+    ratios_ttm = fmp_get("ratios-ttm", f"symbol={ticker}")
+    key_metrics_ttm = fmp_get("key-metrics-ttm", f"symbol={ticker}")
+    analyst_estimates = fmp_get("analyst-estimates", f"symbol={ticker}&period=annual&page=0&limit=3")
 
     prompt = f"""
     Tu es un analyste financier professionnel. Tu fournis une lecture stratégique, contextualisée et pédagogique d'un actif coté, sans jamais donner de conseil d'achat ou de vente.
@@ -69,9 +79,23 @@ def analyze(ticker: str):
     - Évite les généralités.
     - Explique les mécanismes derrière les chiffres.
 
-    Données marché :
-    {market_data}
-    """
+    Données disponibles :
+
+Données marché temps réel :
+{market_data}
+
+Profil société :
+{company_profile}
+
+Ratios financiers TTM :
+{ratios_ttm}
+
+Indicateurs fondamentaux TTM :
+{key_metrics_ttm}
+
+Estimations analystes :
+{analyst_estimates}
+"""
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -89,8 +113,12 @@ def analyze(ticker: str):
         temperature=0.3
     )
 
-    return {
+     return {
         "ticker": ticker,
         "market_data": market_data,
+        "company_profile": company_profile,
+        "ratios_ttm": ratios_ttm,
+        "key_metrics_ttm": key_metrics_ttm,
+        "analyst_estimates": analyst_estimates,
         "analysis": completion.choices[0].message.content
     }
