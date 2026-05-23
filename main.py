@@ -37,7 +37,7 @@ def analyze(ticker: str):
         "interest_rate_sensitivity": "",
         "portfolio_role": "",
         "market_tension": ""
-    }
+    })
 
     def safe_float(value, default=0):
         try:
