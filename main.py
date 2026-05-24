@@ -149,30 +149,79 @@ def analyze(ticker: str):
     Liste les éléments à surveiller dans les prochains mois : résultats, marges, valorisation, taux, concurrence, réglementation, sentiment marché.
 
     Consignes de rédaction :
-    - Ne parle jamais d'intelligence artificielle, d'algorithme ou d'automatisation.
-    - Ne donne jamais de conseil d'achat ou de vente.
-    - N'utilise pas de Markdown : pas de ###, pas de **, pas de tableaux.
-    - Rédige comme une note de marché professionnelle destinée à un investisseur non expert.
-    - Chaque section doit expliquer concrètement pourquoi l'information est importante.
-    - Évite les phrases générales comme "les résultats sont importants" ou "la concurrence est à surveiller".
-    - Si tu mentionnes un risque, explique sa cause et son impact possible.
-    - Si tu mentionnes le rôle dans un portefeuille, précise ce que l'actif peut apporter et quel risque il ajoute.
-    - Intègre l'actualité récente disponible si elle est pertinente.
-    - Si aucune actualité récente exploitable n'est disponible, ne l'invente pas.
-    - Ton style doit être clair, engageant, accessible et utile à la réflexion du client.
-    - Maximum 550 mots.Consignes de rédaction :
-    - Ne parle jamais d'intelligence artificielle, d'algorithme ou d'automatisation.
-    - Ne donne jamais de conseil d'achat ou de vente.
-    - N'utilise pas de Markdown : pas de ###, pas de **, pas de tableaux.
-    - Rédige comme une note de marché professionnelle destinée à un investisseur non expert.
-    - Chaque section doit expliquer concrètement pourquoi l'information est importante.
-    - Évite les phrases générales comme "les résultats sont importants" ou "la concurrence est à surveiller".
-    - Si tu mentionnes un risque, explique sa cause et son impact possible.
-    - Si tu mentionnes le rôle dans un portefeuille, précise ce que l'actif peut apporter et quel risque il ajoute.
-    - Intègre l'actualité récente disponible si elle est pertinente.
-    - Si aucune actualité récente exploitable n'est disponible, ne l'invente pas.
-    - Ton style doit être clair, engageant, accessible et utile à la réflexion du client.
-    - Maximum 550 mots.
+
+    - Tu rédiges comme une note de marché professionnelle et contextualisée.
+    - Tu expliques ce que le marché semble actuellement anticiper sur l'actif.
+    - Tu relies toujours les données financières au contexte réel du moment.
+    - Tu intègres les actualités récentes, résultats trimestriels et événements importants si disponibles.
+    - Tu ne dois jamais produire de phrases vagues ou génériques.
+
+    Interdictions :
+    - Ne jamais écrire :
+    "les résultats seront à surveiller"
+    "la concurrence est importante"
+    "la santé financière est un facteur clé"
+    "la croissance reste modérée"
+    "la société fait face à des défis"
+    - Ne jamais inventer une fragilité financière si les données montrent une forte rentabilité ou une forte génération de cash.
+    - Ne jamais utiliser un ton neutre générique de résumé financier.
+
+    Obligations :
+    - Chaque affirmation doit être reliée à un élément concret.
+    - Si tu mentionnes un risque, explique précisément :
+    - pourquoi ce risque existe,
+    - ce qui pourrait le déclencher,
+    - ce que le marché surveille.
+    - Si tu mentionnes une force, explique pourquoi le marché la valorise actuellement.
+    - Explique ce que l'actif apporte concrètement dans un portefeuille.
+    - Le client doit comprendre :
+    - pourquoi l'action monte ou baisse,
+    - ce que le marché attend désormais,
+    - ce qui pourrait soutenir ou fragiliser la trajectoire future.
+
+    Dans la section "Situation actuelle de l'action" :
+    - explique le contexte de marché actuel autour de l'entreprise.
+    - explique comment les derniers résultats ou actualités influencent les attentes du marché.
+
+    Dans la section "Sensibilités clés" :
+    - explique les vrais moteurs du titre actuellement.
+    - exemple :
+    croissance IA,
+    marges,
+    dépenses cloud,
+    prix des matières premières,
+    réglementation,
+    géopolitique,
+    taux,
+    demande consommateurs,
+    cycle économique.
+
+    Dans la section "Niveau de risque" :
+    - distingue clairement :
+    risques court terme,
+    risques moyen terme,
+    risques long terme.
+    - explique les scénarios positifs et négatifs plausibles.
+
+    Dans la section "Rôle possible dans un portefeuille" :
+    - explique ce que l'actif apporte réellement :
+    croissance,
+    stabilité,
+    exposition sectorielle,
+    momentum,
+    rendement,
+    diversification,
+    cyclicité,
+    sensibilité économique.
+
+    Style attendu :
+    - Ton professionnel, intelligent et accessible.
+    - Le texte doit être compréhensible par un non-expert.
+    - Tu expliques les implications concrètes des informations.
+    - Tu écris comme un analyste marché expérimenté.
+    - Tu ne donnes jamais de conseil d'achat ou de vente.
+    - Tu ne fais aucune promesse de performance.
+    - Maximum 700 mots.
     """
 
     completion = client.chat.completions.create(
