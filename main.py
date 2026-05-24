@@ -125,26 +125,28 @@ def analyze(ticker: str):
     Estimations analystes :
     {analyst_estimates}
 
-    Ta réponse DOIT respecter STRICTEMENT cette structure :
+    Ta réponse doit être rédigée en texte clair, sans Markdown.
+    N'utilise jamais ###, **, tableaux, puces complexes ou formatage Markdown.
+
+    Structure obligatoire :
 
     1. Situation actuelle de l'action
     Explique la dynamique récente du titre et ce que le marché semble intégrer.
 
     2. Sensibilités clés
-    Explique à quoi l'action est principalement sensible.
+    Explique les principaux facteurs auxquels l'action est sensible : secteur, taux, résultats, cycle économique, innovation, géopolitique ou réglementation.
 
-    3. Niveau de risque court / moyen / long terme
-    Décompose le risque : court terme, moyen terme, long terme.
+    3. Niveau de risque court, moyen et long terme
+    Explique séparément le risque à court terme, moyen terme et long terme. Justifie chaque horizon.
 
     4. Rôle possible dans un portefeuille
-    Explique ce que l'action peut représenter dans une allocation et quel risque elle ajoute.
+    Explique ce que l'action peut représenter dans une allocation : croissance, technologie, cyclique, défensive, rendement ou diversification. Mentionne aussi le risque ajouté.
 
     5. Horizon de lecture
-    Indique si l'actif se comprend plutôt à court terme, moyen terme ou long terme, sans recommander.
+    Indique si l'actif se comprend plutôt à court terme, moyen terme ou long terme. Justifie sans recommander.
 
     6. Points de vigilance
-     
-    Liste les éléments à surveiller dans les prochains mois.
+    Liste les éléments à surveiller dans les prochains mois : résultats, marges, valorisation, taux, concurrence, réglementation, sentiment marché.
 
     Contraintes :
     - Réponds en français.
@@ -152,7 +154,9 @@ def analyze(ticker: str):
     - Ton professionnel, clair et pédagogique.
     - Ne donne jamais de conseil d'achat ou de vente.
     - Ne fais aucune promesse de performance.
-    - Sois concret et évite les généralités.
+    - Évite les généralités.
+    - Chaque section doit contenir 3 à 5 lignes maximum.
+    - Écris comme un rapport clair destiné à un investisseur non expert.
     """
 
     completion = client.chat.completions.create(
