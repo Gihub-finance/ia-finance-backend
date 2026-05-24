@@ -173,8 +173,18 @@ def analyze(ticker: str):
 
     return {
         "ticker": ticker,
-        "market_data": market_data,
-        "company_profile": company_profile,
-        "signals": signals,
-        "analysis": completion.choices[0].message.content
+        "analysis": completion.choices[0].message.content,
+        "price": quote.get("price"),
+        "change_percent": quote.get("changesPercentage"),
+        "company_name": profile.get("companyName"),
+        "sector": sector,
+        "industry": industry,
+        "market_tension": signals.get("market_tension"),
+        "portfolio_role": signals.get("portfolio_role"),
+        "risk_short_term": signals.get("risk_short_term"),
+        "risk_long_term": signals.get("risk_long_term"),
+        "financial_strength": signals.get("financial_strength"),
+        "valuation_pressure": signals.get("valuation_pressure"),
+        "growth_dependency": signals.get("growth_dependency"),
+        "cashflow_quality": signals.get("cashflow_quality")
     }
