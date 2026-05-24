@@ -148,15 +148,31 @@ def analyze(ticker: str):
     6. Points de vigilance
     Liste les éléments à surveiller dans les prochains mois : résultats, marges, valorisation, taux, concurrence, réglementation, sentiment marché.
 
-    Contraintes :
-    - Réponds en français.
-    - Maximum 450 mots.
-    - Ton professionnel, clair et pédagogique.
+    Consignes de rédaction :
+    - Ne parle jamais d'intelligence artificielle, d'algorithme ou d'automatisation.
     - Ne donne jamais de conseil d'achat ou de vente.
-    - Ne fais aucune promesse de performance.
-    - Évite les généralités.
-    - Chaque section doit contenir 3 à 5 lignes maximum.
-    - Écris comme un rapport clair destiné à un investisseur non expert.
+    - N'utilise pas de Markdown : pas de ###, pas de **, pas de tableaux.
+    - Rédige comme une note de marché professionnelle destinée à un investisseur non expert.
+    - Chaque section doit expliquer concrètement pourquoi l'information est importante.
+    - Évite les phrases générales comme "les résultats sont importants" ou "la concurrence est à surveiller".
+    - Si tu mentionnes un risque, explique sa cause et son impact possible.
+    - Si tu mentionnes le rôle dans un portefeuille, précise ce que l'actif peut apporter et quel risque il ajoute.
+    - Intègre l'actualité récente disponible si elle est pertinente.
+    - Si aucune actualité récente exploitable n'est disponible, ne l'invente pas.
+    - Ton style doit être clair, engageant, accessible et utile à la réflexion du client.
+    - Maximum 550 mots.Consignes de rédaction :
+    - Ne parle jamais d'intelligence artificielle, d'algorithme ou d'automatisation.
+    - Ne donne jamais de conseil d'achat ou de vente.
+    - N'utilise pas de Markdown : pas de ###, pas de **, pas de tableaux.
+    - Rédige comme une note de marché professionnelle destinée à un investisseur non expert.
+    - Chaque section doit expliquer concrètement pourquoi l'information est importante.
+    - Évite les phrases générales comme "les résultats sont importants" ou "la concurrence est à surveiller".
+    - Si tu mentionnes un risque, explique sa cause et son impact possible.
+    - Si tu mentionnes le rôle dans un portefeuille, précise ce que l'actif peut apporter et quel risque il ajoute.
+    - Intègre l'actualité récente disponible si elle est pertinente.
+    - Si aucune actualité récente exploitable n'est disponible, ne l'invente pas.
+    - Ton style doit être clair, engageant, accessible et utile à la réflexion du client.
+    - Maximum 550 mots.
     """
 
     completion = client.chat.completions.create(
