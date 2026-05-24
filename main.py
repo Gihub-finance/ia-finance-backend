@@ -221,7 +221,7 @@ def analyze(ticker: str):
     - Tu écris comme un analyste marché expérimenté.
     - Tu ne donnes jamais de conseil d'achat ou de vente.
     - Tu ne fais aucune promesse de performance.
-    - Maximum 700 mots.
+    - Maximum 800 mots.
     """
 
     completion = client.chat.completions.create(
