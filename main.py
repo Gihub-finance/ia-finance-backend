@@ -2,8 +2,11 @@ from fastapi import FastAPI
 import os
 import requests
 from openai import OpenAI
+from dotenv import load_dotenv
 
-app = FastAPI()
+load_dotenv()
+
+app = FastAPI(debug=True)
 
 FMP_API_KEY = os.getenv("FMP_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
