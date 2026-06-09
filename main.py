@@ -316,9 +316,22 @@ Format attendu :
 - Moteur principal : ...
 - Point fort : ...
 - Point de vigilance : ...
-- Question clé : ...
+- Question clé du marché.
+
+Cette question doit être spécifique à cette société.
+Elle doit représenter le principal enjeu susceptible d'influencer significativement la valorisation dans les prochains trimestres.
+
+Interdiction des questions génériques pouvant s'appliquer à la majorité des sociétés cotées.
 
 ## B. Lecture économique de l'entreprise
+Chaque conclusion doit être justifiée par au moins une donnée chiffrée issue des informations disponibles.
+
+Exemples :
+- Rentabilité élevée : marge nette de X %.
+- Endettement faible : dette/capitaux propres de X.
+- Rentabilité des capitaux forte : ROE de X %.
+
+Ne jamais écrire simplement "solide", "forte" ou "faible" sans justification chiffrée.
 Explique simplement :
 - Comment l'entreprise gagne principalement de l'argent.
 - Si ses revenus semblent diversifiés ou dépendants d'un seul moteur.
@@ -327,18 +340,25 @@ Explique simplement :
 
 Ne dépasse pas 8 lignes.
 
-## C. Ce qui peut faire évoluer l'action
-Donne 3 facteurs maximum.
+## D. Valorisation actuelle
 
-Pour chaque facteur :
-- Pourquoi c'est important.
-- Ce qu'il faut surveiller concrètement.
-- Ce qui serait un signal positif.
-- Ce qui serait un signal négatif.
+Explique la valorisation de manière simple et compréhensible.
 
-Choisis uniquement les facteurs vraiment utiles pour cette société.
+Utilise notamment :
+- PER
+- score d'exigence du marché
+- croissance disponible
 
-## D. Risques à surveiller
+Format :
+
+- Niveau de valorisation : faible, raisonnable, exigeante ou très exigeante.
+- Ce que cela signifie concrètement.
+- Ce que le marché semble déjà intégrer dans le cours actuel.
+- Quelle marge d'erreur semble encore acceptable.
+
+Maximum 6 lignes.
+
+## E. Risques à surveiller
 Donne 3 risques maximum.
 
 Pour chaque risque :
@@ -348,7 +368,7 @@ Pour chaque risque :
 
 Évite les généralités.
 
-## E. Ce que le marché surveille maintenant
+## F. Ce que le marché surveille maintenant
 Résume les 3 indicateurs les plus importants actuellement.
 
 Pour chaque indicateur :
@@ -356,26 +376,43 @@ Pour chaque indicateur :
 - Lecture négative.
 - Pourquoi cela peut influencer la valorisation.
 
-## F. Événements à suivre
+## G. Événements à suivre
 Utilise uniquement les événements réellement pertinents dans les données fournies.
 
-Priorité :
-1. Résultats de l'entreprise.
-2. Guidance ou conférence investisseurs.
-3. Actualités sectorielles importantes.
-4. Événements macro majeurs uniquement s'ils peuvent influencer fortement cette action.
+Ordre de priorité :
+
+1. Publication des résultats.
+2. Révision des prévisions.
+3. Investor Day.
+4. Dividendes.
+5. Programme de rachat d'actions.
+6. Contrats majeurs.
+7. Événements sectoriels.
+8. Événements macro.
+
+Les événements macro ne doivent être retenus que s'ils peuvent avoir un impact significatif sur cette société.
+
+Ne jamais remplir artificiellement la section avec des événements peu utiles.
 
 Ne garde pas d'événement macro faible ou sans lien clair.
 Limite à 5 événements maximum.
 Si aucun événement pertinent n'est disponible, écris :
 "Aucun événement spécifique suffisamment pertinent n'est identifié dans les données disponibles."
 
-## G. Synthèse analytique
+## H. Synthèse analytique
 En 5 lignes maximum :
 - Ce qui soutient l'action aujourd'hui.
 - Ce qui peut fragiliser la perception du marché.
 - Les 3 points à suivre en priorité.
 - Ce que l'investisseur doit clarifier avant de prendre sa propre décision.
+
+Ajoute obligatoirement :
+
+Ce qui doit être confirmé :
+[élément principal attendu par le marché]
+
+Ce qui pourrait remettre en cause la thèse actuelle :
+[principal risque susceptible de modifier la perception du marché]
 
 Termine exactement par :
 Cette analyse constitue une aide à la compréhension de l'entreprise et de son environnement. Elle ne constitue pas un conseil en investissement. Tout investissement en bourse comporte un risque de perte partielle ou totale du capital.
