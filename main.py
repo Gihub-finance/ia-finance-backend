@@ -293,6 +293,9 @@ Prix actuel : {price}
 Capitalisation : {market_cap}
 Profil société : {profile}
 Scores financiers : {scores}
+Qualité financière : {scores.get('financial_quality_score')}
+Risque observé : {scores.get('risk_score')}
+Exigence du marché : {scores.get('market_expectation_score')}
 Ratios TTM : {ratios}
 Key metrics TTM : {metrics}
 Estimations analystes : {analyst_estimates}
@@ -302,6 +305,16 @@ Actualités récentes : {stock_news}
 Structure obligatoire :
 
 # {company_name} ({ticker})
+
+## Tableau de bord express
+
+Présente obligatoirement :
+
+- Qualité financière : X/100 + interprétation en une phrase
+- Risque observé : X/100 + interprétation en une phrase
+- Exigence du marché : X/100 + interprétation en une phrase
+
+Maximum 5 lignes.
 
 ## A. Ce qu'il faut comprendre immédiatement
 Présente en 5 lignes maximum :
@@ -316,12 +329,17 @@ Format attendu :
 - Moteur principal : ...
 - Point fort : ...
 - Point de vigilance : ...
-- Question clé du marché.
+- Question clé du marché : ...
 
-Cette question doit être spécifique à cette société.
-Elle doit représenter le principal enjeu susceptible d'influencer significativement la valorisation dans les prochains trimestres.
+Cette question doit être construite à partir du principal moteur économique identifié dans les données disponibles.
 
-Interdiction des questions génériques pouvant s'appliquer à la majorité des sociétés cotées.
+Elle doit être spécifique à cette société et ne doit pas pouvoir être réutilisée telle quelle pour la majorité des sociétés cotées.
+
+Mauvais exemple :
+"Comment l'entreprise va-t-elle faire face à la concurrence ?"
+
+Bon exemple :
+"Le rythme de croissance d'Azure est-il suffisant pour justifier la valorisation actuelle de Microsoft ?"
 
 ## B. Lecture économique de l'entreprise
 Chaque conclusion doit être justifiée par au moins une donnée chiffrée issue des informations disponibles.
@@ -341,6 +359,15 @@ Explique simplement :
 Ne dépasse pas 8 lignes.
 
 ## D. Valorisation actuelle
+
+Ne jamais inventer :
+- une cible de prix,
+- une probabilité,
+- une marge d'erreur,
+- un objectif de cours,
+- un rendement futur.
+
+Toutes les conclusions doivent être directement déduites des données fournies.
 
 Explique la valorisation de manière simple et compréhensible.
 
