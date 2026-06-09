@@ -417,6 +417,15 @@ Interdiction absolue d'inventer :
 
 Si une information n'est pas disponible dans les données fournies, ne pas la créer.
 
+Interdiction absolue d'utiliser les expressions :
+"marge d'erreur acceptable",
+"autour du prix actuel",
+"potentiel de hausse",
+"potentiel de baisse",
+"objectif de cours".
+
+Ne jamais estimer un niveau de prix ou une tolérance de marché.
+
 ## D. Risques à surveiller
 Donne 3 risques maximum.
 
@@ -479,10 +488,8 @@ En 5 lignes maximum :
 Ajoute obligatoirement :
 
 Ce qui doit être confirmé :
-[élément principal attendu par le marché]
-
 Ce qui pourrait remettre en cause la thèse actuelle :
-[principal risque susceptible de modifier la perception du marché]
+
 
 Termine exactement par :
 Cette analyse constitue une aide à la compréhension de l'entreprise et de son environnement. Elle ne constitue pas un conseil en investissement. Tout investissement en bourse comporte un risque de perte partielle ou totale du capital.
