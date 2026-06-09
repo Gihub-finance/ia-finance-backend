@@ -1,9 +1,11 @@
-from fastapi import FastAPI
 import os
-import requests
-from openai import OpenAI
-from dotenv import load_dotenv 
 from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
+import requests
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from openai import OpenAI
 
 load_dotenv()
 
@@ -20,42 +22,25 @@ def home():
     return {"status": "IA Finance backend running"}
 
 
-def safe_float(value, default=0):
+def safe_float(value: Any, default: float = 0.0) -> float:
     try:
-        if value is None:
+        if value is None or value == "":
             return default
         return float(value)
     except Exception:
         return default
 
 
-def clamp(value, minimum=0, maximum=100):
+def safe_pct(value: Any) -> str:
+    number = safe_float(value)
+    return f"{number:.1f}%"
+
+
+def clamp(value: float, minimum: float = 0, maximum: float = 100) -> float:
     return max(minimum, min(maximum, value))
 
 
-def score_label(score):
-    if score >= 80:
-        return "très favorable"
-    if score >= 65:
-        return "favorable"
-    if score >= 45:
-        return "équilibré"
-    if score >= 30:
-        return "fragile"
-    return "risqué"
-
-
-def risk_label(score):
-    if score >= 75:
-        return "faible"
-    if score >= 55:
-        return "modéré"
-    if score >= 35:
-        return "élevé"
-    return "très élevé"
-
-
-def badge_level(value):
+def badge_level(value: float) -> str:
     if value >= 75:
         return "green"
     if value >= 55:
@@ -65,58 +50,70 @@ def badge_level(value):
     return "red"
 
 
-@app.get("/analyze")
-def analyze(ticker: str):
-    ticker = ticker.upper().strip()
+def quality_label(score: float) -> str:
+    if score >= 80:
+        return "très solide"
+    if score >= 65:
+        return "solide"
+    if score >= 45:
+        return "correcte"
+    if score >= 30:
+        return "fragile"
+    return "très fragile"
 
-    def fmp_get(endpoint: str, params: str = ""):
-        separator = "&" if params else ""
-        url = f"https://financialmodelingprep.com/stable/{endpoint}?{params}{separator}apikey={FMP_API_KEY}"
-        try:
-            response = requests.get(url, timeout=20)
-            return response.json()
-        except Exception as e:
-            return {"error": str(e)}
 
-    market_data = fmp_get("quote", f"symbol={ticker}")
-    company_profile = fmp_get("profile", f"symbol={ticker}")
-    ratios_ttm = fmp_get("ratios-ttm", f"symbol={ticker}")
-    key_metrics_ttm = fmp_get("key-metrics-ttm", f"symbol={ticker}")
-    analyst_estimates = fmp_get("analyst-estimates", f"symbol={ticker}&period=annual&page=0&limit=3")
+def risk_label(score: float) -> str:
+    if score >= 75:
+        return "faible"
+    if score >= 55:
+        return "modéré"
+    if score >= 35:
+        return "élevé"
+    return "très élevé"
 
-    today = datetime.utcnow().date()
-    in_10_days = today + timedelta(days=10)
 
-    earnings_calendar = fmp_get(
-        "earnings-calendar",
-        f"from={today}&to={in_10_days}"
-    )
+def valuation_label(pe_ratio: float) -> str:
+    if pe_ratio <= 0:
+        return "difficile à lire"
+    if pe_ratio < 18:
+        return "peu exigeante"
+    if pe_ratio < 30:
+        return "raisonnable à modérée"
+    if pe_ratio < 45:
+        return "exigeante"
+    return "très exigeante"
 
-    economic_calendar = fmp_get(
-        "economic-calendar",
-        f"from={today}&to={in_10_days}"
-    )
 
-    stock_news = fmp_get(
-        "stock-news",
-        f"symbols={ticker}&limit=5"
-    )
+def importance_from_percent(percent: float) -> str:
+    if percent >= 40:
+        return "Très élevée"
+    if percent >= 20:
+        return "Élevée"
+    if percent >= 10:
+        return "Moyenne"
+    return "Faible"
 
-    profile = company_profile[0] if isinstance(company_profile, list) and len(company_profile) > 0 else {}
-    quote = market_data[0] if isinstance(market_data, list) and len(market_data) > 0 else {}
-    ratios = ratios_ttm[0] if isinstance(ratios_ttm, list) and len(ratios_ttm) > 0 else {}
-    metrics = key_metrics_ttm[0] if isinstance(key_metrics_ttm, list) and len(key_metrics_ttm) > 0 else {}
 
-    company_name = profile.get("companyName") or ticker
-    sector = profile.get("sector") or ""
-    industry = profile.get("industry") or ""
-    country = profile.get("country") or ""
-    currency = quote.get("currency") or profile.get("currency") or ""
+def list_first(data: Any) -> Dict[str, Any]:
+    if isinstance(data, list) and data:
+        return data[0] if isinstance(data[0], dict) else {}
+    return {}
 
-    price = safe_float(quote.get("price"))
-    change = safe_float(quote.get("changesPercentage"))
+
+def fmp_get(endpoint: str, params: str = "") -> Any:
+    separator = "&" if params else ""
+    url = f"https://financialmodelingprep.com/stable/{endpoint}?{params}{separator}apikey={FMP_API_KEY}"
+    try:
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+        return response.json()
+    except Exception as exc:
+        return {"error": str(exc), "endpoint": endpoint}
+
+
+def build_financial_scores(profile: Dict[str, Any], quote: Dict[str, Any], ratios: Dict[str, Any], metrics: Dict[str, Any]) -> Dict[str, Any]:
     beta = safe_float(profile.get("beta"), 1)
-
+    change = safe_float(quote.get("changesPercentage"))
     pe_ratio = safe_float(ratios.get("priceEarningsRatioTTM"))
     net_margin = safe_float(ratios.get("netProfitMarginTTM"))
     roe = safe_float(ratios.get("returnOnEquityTTM"))
@@ -124,19 +121,14 @@ def analyze(ticker: str):
     current_ratio = safe_float(ratios.get("currentRatioTTM"))
     operating_margin = safe_float(ratios.get("operatingProfitMarginTTM"))
     free_cash_flow_yield = safe_float(metrics.get("freeCashFlowYieldTTM"))
-    revenue_per_share = safe_float(metrics.get("revenuePerShareTTM"))
 
-    quality_score = 50
-    quality_score += 20 if roe > 0.20 else 10 if roe > 0.10 else -10
-    quality_score += 20 if net_margin > 0.20 else 10 if net_margin > 0.10 else -10
-    quality_score += 15 if operating_margin > 0.20 else 5 if operating_margin > 0.10 else -5
-    quality_score += 10 if free_cash_flow_yield > 0.03 else -10 if free_cash_flow_yield < 0 else 0
-    quality_score = clamp(quality_score)
-
-    valuation_score = 70
-    valuation_score -= 30 if pe_ratio > 45 else 20 if pe_ratio > 30 else 10 if pe_ratio > 20 else 0
-    valuation_score += 10 if pe_ratio > 0 and pe_ratio < 18 else 0
-    valuation_score = clamp(valuation_score)
+    financial_quality = 50
+    financial_quality += 20 if roe > 0.20 else 10 if roe > 0.10 else -10
+    financial_quality += 20 if net_margin > 0.20 else 10 if net_margin > 0.10 else -10
+    financial_quality += 15 if operating_margin > 0.20 else 5 if operating_margin > 0.10 else -5
+    financial_quality += 10 if free_cash_flow_yield > 0.03 else -10 if free_cash_flow_yield < 0 else 0
+    financial_quality += 10 if current_ratio > 1.5 else -5 if current_ratio < 1 else 0
+    financial_quality = clamp(financial_quality)
 
     risk_score = 75
     risk_score -= 25 if beta > 1.7 else 15 if beta > 1.2 else 0
@@ -145,262 +137,221 @@ def analyze(ticker: str):
     risk_score += 10 if current_ratio > 1.5 else 0
     risk_score = clamp(risk_score)
 
-    momentum_score = 50
-    momentum_score += 20 if change > 3 else 10 if change > 0 else -15 if change < -3 else -5
-    momentum_score = clamp(momentum_score)
+    market_expectation_score = 50
+    market_expectation_score += 25 if pe_ratio > 45 else 15 if pe_ratio > 30 else 5 if pe_ratio > 20 else -5
+    market_expectation_score += 10 if beta > 1.3 else 0
+    market_expectation_score = clamp(market_expectation_score)
 
-    global_score = round(
-        quality_score * 0.35 +
-        valuation_score * 0.20 +
-        risk_score * 0.30 +
-        momentum_score * 0.15
-    )
-
-    signals = {
-        "sector": sector,
-        "industry": industry,
-        "market_tension": "élevée" if abs(change) > 5 else "modérée" if abs(change) > 2 else "faible",
-        "financial_strength": "très solide" if roe > 0.20 and net_margin > 0.20 else "correcte" if roe > 0.10 else "fragile ou cyclique",
-        "valuation_pressure": "valorisation élevée" if pe_ratio > 40 else "valorisation modérée" if pe_ratio > 25 else "valorisation raisonnable",
-        "growth_dependency": "forte dépendance à la croissance" if sector == "Technology" else "dépendance modérée à la croissance",
-        "cashflow_quality": "génération de cash robuste" if free_cash_flow_yield > 0.05 else "cashflow correct" if free_cash_flow_yield > 0 else "cashflow sous pression",
-        "interest_rate_sensitivity": "élevée" if sector in ["Technology", "Communication Services"] else "faible" if sector in ["Utilities", "Consumer Defensive"] else "modérée",
-        "portfolio_role": "croissance" if sector == "Technology" else "cyclique" if sector == "Energy" else "exposition financière" if sector == "Financial Services" else "industrie / défense" if "Defense" in industry else "diversification",
-        "risk_short_term": "élevé" if beta > 1.5 or abs(change) > 5 else "modéré" if beta > 1 else "faible",
-        "risk_long_term": "modéré" if sector in ["Technology", "Communication Services"] else "faible",
-        "market_profile": "croissance volatile" if beta > 1.5 else "cyclique / sensible au marché" if beta > 1 else "profil plus défensif ou stable"
-    }
-
-    scorecards = {
-        "global_score": global_score,
-        "global_label": score_label(global_score),
-        "quality_score": round(quality_score),
-        "quality_label": score_label(quality_score),
-        "valuation_score": round(valuation_score),
-        "valuation_label": score_label(valuation_score),
+    return {
+        "financial_quality_score": round(financial_quality),
+        "financial_quality_label": quality_label(financial_quality),
         "risk_score": round(risk_score),
         "risk_label": risk_label(risk_score),
-        "momentum_score": round(momentum_score),
-        "momentum_label": score_label(momentum_score)
+        "market_expectation_score": round(market_expectation_score),
+        "market_expectation_label": "élevée" if market_expectation_score >= 65 else "modérée" if market_expectation_score >= 45 else "faible",
+        "valuation_label": valuation_label(pe_ratio),
+        "beta": beta,
+        "pe_ratio": pe_ratio,
+        "net_margin": net_margin,
+        "operating_margin": operating_margin,
+        "roe": roe,
+        "debt_equity": debt_equity,
+        "current_ratio": current_ratio,
+        "free_cash_flow_yield": free_cash_flow_yield,
     }
 
-    badges = [
-        {
-            "label": "Qualité financière",
-            "value": round(quality_score),
-            "level": badge_level(quality_score),
-            "text": score_label(quality_score)
-        },
-        {
-            "label": "Valorisation",
-            "value": round(valuation_score),
-            "level": badge_level(valuation_score),
-            "text": score_label(valuation_score)
-        },
-        {
-            "label": "Risque",
-            "value": round(risk_score),
-            "level": badge_level(risk_score),
-            "text": risk_label(risk_score)
-        },
-        {
-            "label": "Momentum",
-            "value": round(momentum_score),
-            "level": badge_level(momentum_score),
-            "text": score_label(momentum_score)
-        }
-    ]
 
-    synthetic_cards = {
-        "business_card": {
-            "title": "Profil de l'entreprise",
-            "company_name": company_name,
-            "sector": sector,
-            "industry": industry,
-            "country": country,
-            "currency": currency
-        },
-        "market_card": {
-            "title": "Dynamique de marché",
-            "price": price,
-            "change_percent": quote.get("changesPercentage"),
-            "market_tension": signals["market_tension"],
-            "beta": beta
-        },
-        "risk_card": {
-            "title": "Lecture du risque",
-            "short_term": signals["risk_short_term"],
-            "long_term": signals["risk_long_term"],
-            "risk_score": round(risk_score),
-            "risk_label": risk_label(risk_score)
-        },
-        "valuation_card": {
-            "title": "Valorisation",
-            "pe_ratio": pe_ratio,
-            "valuation_pressure": signals["valuation_pressure"],
-            "valuation_score": round(valuation_score)
-        }
-    }
-
-    scenarios = {
-        "favorable": "Le scénario favorable suppose une croissance soutenue, des marges résistantes, une demande solide et un marché qui continue de valoriser les qualités de l'entreprise.",
-        "central": "Le scénario central suppose une normalisation progressive : l'entreprise conserve ses forces, mais le marché reste attentif à la valorisation, aux résultats et au contexte macroéconomique.",
-        "defavorable": "Le scénario défavorable suppose une déception sur les résultats, une pression sur les marges, une hausse du risque sectoriel ou une rotation de marché défavorable."
-    }
-
-    risk_items = [
-        {
-            "risk": "Volatilité du titre",
-            "importance": "élevé" if beta > 1.5 or abs(change) > 5 else "modéré",
-            "why": "Le titre peut réagir fortement aux résultats, aux taux ou au sentiment de marché.",
-            "signal_to_watch": "Variation brutale du cours, baisse des volumes acheteurs ou réaction négative aux publications."
-        },
-        {
-            "risk": "Valorisation",
-            "importance": "élevé" if pe_ratio > 40 else "modéré" if pe_ratio > 25 else "faible",
-            "why": "Une valorisation élevée rend l'action plus sensible aux déceptions de croissance ou de marge.",
-            "signal_to_watch": "Révision en baisse des prévisions, compression des multiples ou ralentissement du chiffre d'affaires."
-        },
-        {
-            "risk": "Rentabilité",
-            "importance": "modéré" if net_margin > 0.10 else "élevé",
-            "why": "Les marges influencent directement la perception de qualité financière de l'entreprise.",
-            "signal_to_watch": "Baisse de marge brute, hausse des coûts ou pression concurrentielle."
-        },
-        {
-            "risk": "Sensibilité macroéconomique",
-            "importance": signals["interest_rate_sensitivity"],
-            "why": "Les taux, l'inflation et le cycle économique peuvent modifier les attentes des investisseurs.",
-            "signal_to_watch": "Hausse des taux, ralentissement de la demande ou discours restrictif des banques centrales."
-        },
-        {
-            "risk": "Risque sectoriel",
-            "importance": "modéré",
-            "why": "Le secteur peut subir une rotation de marché, des changements réglementaires ou une pression concurrentielle.",
-            "signal_to_watch": "Résultats des concurrents, annonces réglementaires ou baisse de la demande sectorielle."
-        }
-    ]
-
-    events_10_days = []
+def build_events_30_days(ticker: str, today: datetime.date, earnings_calendar: Any, economic_calendar: Any) -> List[Dict[str, Any]]:
+    events: List[Dict[str, Any]] = []
 
     if isinstance(earnings_calendar, list):
-        for event in earnings_calendar[:20]:
-            if event.get("symbol") == ticker:
-                events_10_days.append({
+        for event in earnings_calendar:
+            if str(event.get("symbol", "")).upper() == ticker:
+                events.append({
                     "date": event.get("date"),
-                    "type": "résultats entreprise",
-                    "importance": "élevée",
-                    "possible_impact": "incertain",
-                    "what_to_watch": "chiffre d'affaires, marges, bénéfice par action, prévisions et commentaires du management"
+                    "event": "Résultats de la société",
+                    "importance": "🔴 Élevée",
+                    "why": "Les résultats peuvent modifier rapidement la perception du marché sur la croissance, les marges et les prévisions.",
+                    "watch": "Chiffre d'affaires, marges, bénéfice par action, guidance et commentaires du management."
                 })
 
+    macro_keywords_high = ["CPI", "Inflation", "Interest Rate", "Fed", "FOMC", "ECB", "GDP", "Nonfarm", "Unemployment"]
     if isinstance(economic_calendar, list):
-        for event in economic_calendar[:10]:
-            events_10_days.append({
-                "date": event.get("date"),
-                "type": event.get("event") or "événement macroéconomique",
-                "importance": "modérée à élevée",
-                "possible_impact": "incertain",
-                "what_to_watch": "inflation, taux, emploi, croissance économique ou réaction des banques centrales"
-            })
+        for event in economic_calendar[:30]:
+            name = event.get("event") or event.get("name") or "Événement macroéconomique"
+            is_high = any(keyword.lower() in str(name).lower() for keyword in macro_keywords_high)
+            if is_high:
+                events.append({
+                    "date": event.get("date"),
+                    "event": name,
+                    "importance": "🔴 Élevée" if any(k.lower() in str(name).lower() for k in ["cpi", "inflation", "interest", "fed", "fomc", "ecb"]) else "🟠 Moyenne",
+                    "why": "Cet événement peut influencer les taux, la valorisation des actions et l'appétit pour le risque.",
+                    "watch": "Écart avec les attentes du marché, réaction des taux et réaction des indices."
+                })
 
-    if not events_10_days:
-        events_10_days.append({
-            "date": f"{today} à {in_10_days}",
-            "type": "veille de marché",
-            "importance": "modérée",
-            "possible_impact": "incertain",
-            "what_to_watch": "résultats, annonces sectorielles, taux, inflation, évolution du marché et nouvelles propres à l'entreprise"
+    if not events:
+        events.append({
+            "date": f"{today} à {today + timedelta(days=30)}",
+            "event": "Veille société et marché",
+            "importance": "🟠 Moyenne",
+            "why": "Aucun événement majeur détecté dans les données disponibles, mais le titre peut rester sensible aux actualités de l'entreprise et du secteur.",
+            "watch": "Communiqués officiels, résultats des concurrents, nouvelles sectorielles et mouvements de marché."
         })
 
+    return events[:5]
+
+
+@app.get("/analyze")
+def analyze(ticker: str):
+    ticker = ticker.upper().strip()
+    if not ticker:
+        raise HTTPException(status_code=400, detail="Ticker manquant")
+
+    market_data = fmp_get("quote", f"symbol={ticker}")
+    company_profile = fmp_get("profile", f"symbol={ticker}")
+    ratios_ttm = fmp_get("ratios-ttm", f"symbol={ticker}")
+    key_metrics_ttm = fmp_get("key-metrics-ttm", f"symbol={ticker}")
+    analyst_estimates = fmp_get("analyst-estimates", f"symbol={ticker}&period=annual&page=0&limit=3")
+    stock_news = fmp_get("stock-news", f"symbols={ticker}&limit=8")
+
+    today = datetime.utcnow().date()
+    in_30_days = today + timedelta(days=30)
+    earnings_calendar = fmp_get("earnings-calendar", f"from={today}&to={in_30_days}")
+    economic_calendar = fmp_get("economic-calendar", f"from={today}&to={in_30_days}")
+
+    profile = list_first(company_profile)
+    quote = list_first(market_data)
+    ratios = list_first(ratios_ttm)
+    metrics = list_first(key_metrics_ttm)
+
+    company_name = profile.get("companyName") or ticker
+    sector = profile.get("sector") or "Non renseigné"
+    industry = profile.get("industry") or "Non renseigné"
+    country = profile.get("country") or "Non renseigné"
+    currency = quote.get("currency") or profile.get("currency") or ""
+    price = safe_float(quote.get("price"))
+    market_cap = safe_float(profile.get("mktCap") or quote.get("marketCap"))
+
+    scores = build_financial_scores(profile, quote, ratios, metrics)
+    events_30_days = build_events_30_days(ticker, today, earnings_calendar, economic_calendar)
+
+    business_context = {
+        "company_name": company_name,
+        "ticker": ticker,
+        "sector": sector,
+        "industry": industry,
+        "country": country,
+        "currency": currency,
+        "price": price,
+        "market_cap": market_cap,
+        "description": profile.get("description", ""),
+        "website": profile.get("website", ""),
+        "exchange": profile.get("exchangeShortName") or quote.get("exchange"),
+    }
+
+    watch_sources = [
+        "Résultats trimestriels et rapport annuel de la société",
+        "Communiqués officiels et présentations investisseurs",
+        "Transcripts des conférences de résultats",
+        "Résultats et commentaires des concurrents directs",
+        "Calendrier macroéconomique : inflation, taux, emploi, banques centrales",
+        "Actualités sectorielles récentes"
+    ]
+
     prompt = f"""
-Tu es un analyste financier professionnel. Tu fournis une analyse digitale claire, vendable et utile pour un investisseur non professionnel.
-Tu ne donnes jamais de conseil d'achat, de vente ou de conservation.
-Tu expliques simplement les faits, les risques, les moteurs et les scénarios.
+Tu rédiges l'analyse payante d'une seule action pour un investisseur particulier intermédiaire.
+Objectif produit : lecture en moins de 2 minutes, forte valeur utile, pas de remplissage, pas de conseil d'investissement.
+Tu dois vulgariser sans appauvrir l'analyse.
+Tu dois être concret : chaque affirmation importante doit indiquer quoi surveiller et où le surveiller.
+Tu ne dois jamais écrire acheter, vendre, conserver, recommandation, objectif de cours, promesse de performance.
+Tu dois éviter les phrases creuses du type "si ça monte vous gagnez, si ça baisse vous perdez".
 
-Action analysée : {ticker}
-Entreprise : {company_name}
-Secteur : {sector}
-Industrie : {industry}
+ACTION ANALYSÉE
+{business_context}
 
-Données marché :
+DONNÉES MARCHÉ
 {market_data}
 
-Profil société :
+PROFIL SOCIÉTÉ
 {company_profile}
 
-Ratios financiers TTM :
+RATIOS TTM
 {ratios_ttm}
 
-Indicateurs fondamentaux TTM :
+MÉTRIQUES TTM
 {key_metrics_ttm}
 
-Estimations analystes :
+ESTIMATIONS ANALYSTES
 {analyst_estimates}
 
-Actualités récentes :
+ACTUALITÉS RÉCENTES
 {stock_news}
 
-Signaux calculés :
-{signals}
+SCORES INTERNES
+{scores}
 
-Scores calculés :
-{scorecards}
+ÉVÉNEMENTS 30 JOURS
+{events_30_days}
 
-Risques identifiés :
-{risk_items}
+SOURCES DE VEILLE À UTILISER DANS L'ANALYSE
+{watch_sources}
 
-Événements sur 10 jours :
-{events_10_days}
+FORMAT OBLIGATOIRE EXACT
 
-Structure obligatoire :
+# {company_name} ({ticker})
 
-A. Résumé exécutif — sans recommandation ni conseil
-Présente une synthèse claire de l'action.
-Explique ce que fait l'entreprise, son secteur, pourquoi elle mérite une analyse attentive actuellement.
-Indique le niveau général de risque observé.
-Résume les points forts visibles.
-Résume les points de vigilance.
-Explique ce qui peut soutenir le titre, ce qui peut le fragiliser, et ce que l'investisseur doit surveiller dans les prochains jours.
-Langage simple, direct et compréhensible.
+## A. La société en 30 secondes
+- Qui est l'entreprise ? 1 à 2 phrases maximum.
+- Position dans son secteur : leader mondial, leader régional, challenger, acteur de niche ou position difficile à déterminer.
+- Taille : capitalisation boursière approximative si disponible.
+- Présence géographique : uniquement si les données sont disponibles ; sinon indiquer que la répartition n'est pas suffisamment détaillée dans les données disponibles.
+- D'où vient l'argent ? Donner 3 à 5 activités ou segments probables, avec importance : Très élevée, Élevée, Moyenne, Faible. Ne pas inventer de pourcentages si les données ne les fournissent pas.
+- Pourquoi c'est important ? 2 phrases maximum sur diversification, dépendance et qualité économique.
 
-B. Potentiel
-Analyse les éléments pouvant soutenir positivement l'action dans les prochains mois, sans conseil.
-Mentionne croissance, marges, dette, innovation, contrats, expansion, tendance sectorielle.
-Explique si le marché intègre déjà beaucoup d'attentes positives.
-Présente trois scénarios : favorable, central, défavorable.
-Explique les conditions nécessaires pour chaque scénario.
+## B. Ce qui fait vraiment bouger le cours
+Donner maximum 3 moteurs réels du cours.
+Pour chaque moteur :
+- Nom du moteur.
+- Pourquoi cela compte ? 1 phrase.
+- Comment le suivre concrètement ? 2 à 3 éléments de veille maximum avec sources claires.
 
-C. Risques
-Identifie les cinq principaux risques.
-Pour chaque risque, explique pourquoi il est important, comment il peut affecter le cours, son niveau d'importance et les signaux à surveiller.
-Inclure risques entreprise, marché, macroéconomie, réglementation, géopolitique si pertinent.
+## C. Ce qui pourrait poser problème
+Donner maximum 3 risques principaux.
+Pour chaque risque :
+- Risque clairement nommé.
+- Pourquoi ? 1 phrase.
+- Signal d'alerte : indicateur concret + source où le vérifier.
 
-D. Calendrier des événements importants — horizon 10 jours
-Présente uniquement les événements attendus dans les dix prochains jours.
-Inclure événements entreprise, macroéconomiques et sectoriels si disponibles.
-Pour chaque événement : date, type, importance, impact possible, ce qu'il faut surveiller.
+## D. Ce que le marché surveille actuellement
+Donner maximum 3 priorités de surveillance.
+Pour chaque priorité :
+- Indicateur surveillé.
+- Ce qu'une bonne lecture signifierait.
+- Ce qu'une mauvaise lecture signalerait.
+Phrase courte, opérationnelle, sans jargon excessif.
 
-E. Analyse du portefeuille
-Même si une seule action est analysée, explique son rôle possible dans un portefeuille.
-Analyse l'exposition sectorielle, la volatilité, les corrélations probables, les risques cachés et ce que cette ligne peut apporter ou ajouter comme risque.
-Explique avec des mots simples.
+## E. Événements des 30 prochains jours
+Faire un tableau court avec maximum 5 événements.
+Colonnes : Date | Événement | Importance | Pourquoi cela compte.
+Après le tableau, ajouter 2 à 4 points que le marché vérifiera lors de l'événement principal.
 
-F. Conclusion analytique
-Conclusion claire, équilibrée, sans conseil.
-Résume les éléments positifs et les risques.
-Indique si le profil semble défensif, équilibré, dynamique ou spéculatif.
-Présente le rapport potentiel / risque : favorable, équilibré, fragile ou incertain.
-Termine par une phrase utile pour un non-professionnel : ce qu'il doit comprendre et surveiller.
+## F. Synthèse opérationnelle
+- Ce qui soutient actuellement l'entreprise : 4 à 5 points courts.
+- Ce qui mérite une attention particulière : 3 à 4 points courts.
+- Les 3 éléments à surveiller en priorité : liste numérotée.
+- En une phrase : 3 à 4 lignes maximum qui résument le profil de l'entreprise, sa solidité, ses dépendances et ce qui peut modifier la perception du marché.
 
-Contraintes :
-- Français clair.
-- Accessible aux non-professionnels.
-- Pas de recommandation.
-- Pas de promesse de performance.
-- Pas de Markdown complexe.
-- Pas de tableaux.
-- Maximum 1300 mots.
+## Information importante
+Cette analyse constitue une aide à la compréhension de l'entreprise et de son environnement. Elle ne constitue pas un conseil en investissement. Tout investissement en bourse comporte un risque de perte partielle ou totale du capital.
+
+CONTRAINTES STRICTES
+- Français simple, clair, premium.
+- Maximum 900 mots.
+- Phrases courtes.
+- Pas de longue introduction.
+- Pas de tableau sauf dans la section E.
+- Si une donnée manque, le dire proprement au lieu de l'inventer.
+- Ne pas parler d'analyse de portefeuille.
 """
 
     completion = client.chat.completions.create(
@@ -408,16 +359,39 @@ Contraintes :
         messages=[
             {
                 "role": "system",
-                "content": "Tu es un analyste financier professionnel. Tu réponds en français, sans recommandation d'investissement, avec une pédagogie claire pour non-professionnels."
+                "content": (
+                    "Tu es un analyste financier spécialisé dans les analyses courtes, utiles et compréhensibles "
+                    "pour investisseurs particuliers intermédiaires. Tu ne fournis jamais de conseil d'investissement."
+                ),
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt},
         ],
-        max_tokens=1600,
-        temperature=0.25
+        max_tokens=1400,
+        temperature=0.2,
     )
+
+    analysis_text = completion.choices[0].message.content
+
+    badges = [
+        {
+            "label": "Qualité financière",
+            "value": scores["financial_quality_score"],
+            "level": badge_level(scores["financial_quality_score"]),
+            "text": scores["financial_quality_label"],
+        },
+        {
+            "label": "Risque observé",
+            "value": scores["risk_score"],
+            "level": badge_level(scores["risk_score"]),
+            "text": scores["risk_label"],
+        },
+        {
+            "label": "Exigence du marché",
+            "value": scores["market_expectation_score"],
+            "level": badge_level(100 - scores["market_expectation_score"]),
+            "text": scores["market_expectation_label"],
+        },
+    ]
 
     return {
         "ticker": ticker,
@@ -426,37 +400,22 @@ Contraintes :
         "industry": industry,
         "country": country,
         "currency": currency,
-
-        "analysis": completion.choices[0].message.content,
-
         "price": quote.get("price"),
         "change_percent": quote.get("changesPercentage"),
-        "beta": beta,
-
-        "scores": scorecards,
+        "market_cap": market_cap,
+        "analysis": analysis_text,
+        "scores": scores,
         "badges": badges,
-        "synthetic_cards": synthetic_cards,
-        "scenarios": scenarios,
-        "risks": risk_items,
-        "events_10_days": events_10_days,
-
-        "market_tension": signals.get("market_tension"),
-        "portfolio_role": signals.get("portfolio_role"),
-        "risk_short_term": signals.get("risk_short_term"),
-        "risk_long_term": signals.get("risk_long_term"),
-        "financial_strength": signals.get("financial_strength"),
-        "valuation_pressure": signals.get("valuation_pressure"),
-        "growth_dependency": signals.get("growth_dependency"),
-        "cashflow_quality": signals.get("cashflow_quality"),
-        "interest_rate_sensitivity": signals.get("interest_rate_sensitivity"),
-        "market_profile": signals.get("market_profile"),
-
+        "events_30_days": events_30_days,
+        "watch_sources": watch_sources,
         "raw_data": {
             "market_data": market_data,
             "company_profile": company_profile,
             "ratios_ttm": ratios_ttm,
             "key_metrics_ttm": key_metrics_ttm,
             "analyst_estimates": analyst_estimates,
-            "stock_news": stock_news
-        }
+            "stock_news": stock_news,
+            "earnings_calendar": earnings_calendar,
+            "economic_calendar": economic_calendar,
+        },
     }
