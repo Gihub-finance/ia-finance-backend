@@ -112,15 +112,13 @@ def fmp_get(endpoint: str, params: str = "") -> Any:
 
 
 def build_financial_scores(profile: Dict[str, Any], quote: Dict[str, Any], ratios: Dict[str, Any], metrics: Dict[str, Any]) -> Dict[str, Any]:
-
-    print("RATIOS =", ratios)
     
     beta = safe_float(profile.get("beta"), 1)
     change = safe_float(quote.get("changesPercentage"))
-    pe_ratio = safe_float(ratios.get("priceEarningsRatioTTM"))
+    pe_ratio = safe_float(ratios.get("priceToEarningsRatioTTM"))
     net_margin = safe_float(ratios.get("netProfitMarginTTM"))
-    roe = safe_float(ratios.get("returnOnEquityTTM"))
-    debt_equity = safe_float(ratios.get("debtEquityRatioTTM"))
+    roe = safe_float(metrics.get("returnOnEquityTTM"))
+    debt_equity = safe_float(ratios.get("debtToEquityRatioTTM"))
     current_ratio = safe_float(ratios.get("currentRatioTTM"))
     operating_margin = safe_float(ratios.get("operatingProfitMarginTTM"))
     free_cash_flow_yield = safe_float(metrics.get("freeCashFlowYieldTTM"))
@@ -409,6 +407,6 @@ CONTRAINTES STRICTES
         "analysis": analysis_text,
         "scores": scores,
         "badges": badges,
-        "events_30_days": events_10_days,
+        "events_30_days": events_30_days,
         "watch_sources": watch_sources,
     }
