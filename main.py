@@ -313,8 +313,22 @@ Présente obligatoirement :
 - Qualité financière : X/100 + interprétation en une phrase
 - Risque observé : X/100 + interprétation en une phrase
 - Exigence du marché : X/100 + interprétation en une phrase
+- Thèse actuelle du marché : une phrase décrivant l'élément principal qui soutient aujourd'hui la valorisation de l'action.
 
-Maximum 5 lignes.
+Exemples :
+
+Microsoft :
+"La croissance d'Azure et de l'IA soutient actuellement la valorisation."
+
+LVMH :
+"La reprise de la demande asiatique soutient les anticipations du marché."
+
+Coca-Cola :
+"La capacité à maintenir les marges soutient la valorisation."
+
+Cette thèse doit être spécifique à la société analysée et directement liée aux données disponibles.
+
+Maximum 6 lignes.
 
 ## A. Ce qu'il faut comprendre immédiatement
 Présente en 5 lignes maximum :
@@ -358,7 +372,16 @@ Explique simplement :
 
 Ne dépasse pas 8 lignes.
 
-## D. Valorisation actuelle
+## C. Valorisation actuelle
+Interdiction absolue d'inventer :
+
+- un objectif de cours,
+- une marge d'erreur,
+- une probabilité,
+- un rendement futur,
+- une cible de valorisation.
+
+Si l'information n'est pas présente dans les données fournies, ne pas la créer.
 
 Ne jamais inventer :
 - une cible de prix,
@@ -385,7 +408,16 @@ Format :
 
 Maximum 6 lignes.
 
-## E. Risques à surveiller
+Interdiction absolue d'inventer :
+- un objectif de cours,
+- une marge d'erreur,
+- une probabilité,
+- un rendement futur,
+- une cible de valorisation.
+
+Si une information n'est pas disponible dans les données fournies, ne pas la créer.
+
+## D. Risques à surveiller
 Donne 3 risques maximum.
 
 Pour chaque risque :
@@ -395,7 +427,7 @@ Pour chaque risque :
 
 Évite les généralités.
 
-## F. Ce que le marché surveille maintenant
+## E. Ce que le marché surveille maintenant
 Résume les 3 indicateurs les plus importants actuellement.
 
 Pour chaque indicateur :
@@ -403,7 +435,7 @@ Pour chaque indicateur :
 - Lecture négative.
 - Pourquoi cela peut influencer la valorisation.
 
-## G. Événements à suivre
+## F. Événements à suivre
 Utilise uniquement les événements réellement pertinents dans les données fournies.
 
 Ordre de priorité :
@@ -426,7 +458,18 @@ Limite à 5 événements maximum.
 Si aucun événement pertinent n'est disponible, écris :
 "Aucun événement spécifique suffisamment pertinent n'est identifié dans les données disponibles."
 
-## H. Synthèse analytique
+Ne jamais inventer :
+- une date,
+- un événement,
+- une publication,
+- une conférence investisseurs.
+
+Utiliser uniquement les événements réellement présents dans les données fournies.
+
+Si aucune donnée fiable n'est disponible, écrire :
+"Aucun événement société confirmé dans les données actuellement disponibles."
+
+## G. Synthèse analytique
 En 5 lignes maximum :
 - Ce qui soutient l'action aujourd'hui.
 - Ce qui peut fragiliser la perception du marché.
