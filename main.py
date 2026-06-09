@@ -192,7 +192,7 @@ def build_events_30_days(ticker: str, today: datetime.date, earnings_calendar: A
 
     if not events:
         events.append({
-            "date": f"{today} à {today + timedelta(days=30)}",
+            "date": f"{today} à {today + timedelta(days=10)}",
             "event": "Veille société et marché",
             "importance": "🟠 Moyenne",
             "why": "Aucun événement majeur détecté dans les données disponibles, mais le titre peut rester sensible aux actualités de l'entreprise et du secteur.",
@@ -216,9 +216,9 @@ def analyze(ticker: str):
     stock_news = fmp_get("stock-news", f"symbols={ticker}&limit=8")
 
     today = datetime.utcnow().date()
-    in_30_days = today + timedelta(days=30)
-    earnings_calendar = fmp_get("earnings-calendar", f"from={today}&to={in_30_days}")
-    economic_calendar = fmp_get("economic-calendar", f"from={today}&to={in_30_days}")
+    in_10_days = today + timedelta(days=10)
+    earnings_calendar = fmp_get("earnings-calendar", f"from={today}&to={in_10_days}")
+    economic_calendar = fmp_get("economic-calendar", f"from={today}&to={in_10_days}")
 
     profile = list_first(company_profile)
     quote = list_first(market_data)
@@ -260,99 +260,125 @@ def analyze(ticker: str):
     ]
 
     prompt = f"""
-Tu rédiges l'analyse payante d'une seule action pour un investisseur particulier intermédiaire.
-Objectif produit : lecture en moins de 2 minutes, forte valeur utile, pas de remplissage, pas de conseil d'investissement.
-Tu dois vulgariser sans appauvrir l'analyse.
-Tu dois être concret : chaque affirmation importante doit indiquer quoi surveiller et où le surveiller.
-Tu ne dois jamais écrire acheter, vendre, conserver, recommandation, objectif de cours, promesse de performance.
-Tu dois éviter les phrases creuses du type "si ça monte vous gagnez, si ça baisse vous perdez".
+Tu es un analyste financier spécialisé dans l'aide à la décision pour investisseurs particuliers intermédiaires.
 
-ACTION ANALYSÉE
-{business_context}
+Objectif :
+Produire une analyse courte, claire, utile et exploitable d'une action cotée, sans donner de recommandation d'achat, de vente ou de conservation.
 
-DONNÉES MARCHÉ
-{market_data}
+Public cible :
+Investisseur individuel intermédiaire, non professionnel, qui veut comprendre rapidement :
+- ce que fait vraiment l'entreprise,
+- ce qui soutient ou fragilise l'action,
+- ce que le marché surveille,
+- quels signaux suivre dans les prochains jours ou semaines.
 
-PROFIL SOCIÉTÉ
-{company_profile}
+Règles de style :
+- Français clair.
+- Pas de jargon inutile.
+- Pas de conseil d'investissement.
+- Pas de phrases creuses.
+- Analyse lisible en moins de 2 minutes.
+- Chaque affirmation importante doit être accompagnée d'un élément concret à surveiller.
+- Ne jamais dire simplement "si le cours monte l'investisseur gagne".
+- Ne pas inventer d'information absente des données.
+- Si une donnée manque, écrire "donnée non disponible".
 
-RATIOS TTM
-{ratios_ttm}
+Données disponibles :
+Société : {company_name}
+Ticker : {ticker}
+Secteur : {sector}
+Industrie : {industry}
+Pays : {country}
+Prix actuel : {price}
+Capitalisation : {market_cap}
+Profil société : {profile}
+Scores financiers : {scores}
+Ratios TTM : {ratios}
+Key metrics TTM : {metrics}
+Estimations analystes : {analyst_estimates}
+Actualités récentes : {stock_news}
+Événements à venir : {events_30_days}
 
-MÉTRIQUES TTM
-{key_metrics_ttm}
-
-ESTIMATIONS ANALYSTES
-{analyst_estimates}
-
-ACTUALITÉS RÉCENTES
-{stock_news}
-
-SCORES INTERNES
-{scores}
-
-ÉVÉNEMENTS 30 JOURS
-{events_30_days}
-
-SOURCES DE VEILLE À UTILISER DANS L'ANALYSE
-{watch_sources}
-
-FORMAT OBLIGATOIRE EXACT
+Structure obligatoire :
 
 # {company_name} ({ticker})
 
-## A. La société en 30 secondes
-- Qui est l'entreprise ? 1 à 2 phrases maximum.
-- Position dans son secteur : leader mondial, leader régional, challenger, acteur de niche ou position difficile à déterminer.
-- Taille : capitalisation boursière approximative si disponible.
-- Présence géographique : uniquement si les données sont disponibles ; sinon indiquer que la répartition n'est pas suffisamment détaillée dans les données disponibles.
-- D'où vient l'argent ? Donner 3 à 5 activités ou segments probables, avec importance : Très élevée, Élevée, Moyenne, Faible. Ne pas inventer de pourcentages si les données ne les fournissent pas.
-- Pourquoi c'est important ? 2 phrases maximum sur diversification, dépendance et qualité économique.
+## A. Ce qu'il faut comprendre immédiatement
+Présente en 5 lignes maximum :
+- Position de l'entreprise : dominante, forte, moyenne, fragile ou difficile à déterminer.
+- Moteur principal de l'action.
+- Point fort financier le plus important.
+- Point de vigilance principal.
+- Question centrale que le marché se pose actuellement.
 
-## B. Ce qui fait vraiment bouger le cours
-Donner maximum 3 moteurs réels du cours.
-Pour chaque moteur :
-- Nom du moteur.
-- Pourquoi cela compte ? 1 phrase.
-- Comment le suivre concrètement ? 2 à 3 éléments de veille maximum avec sources claires.
+Format attendu :
+- Position : ...
+- Moteur principal : ...
+- Point fort : ...
+- Point de vigilance : ...
+- Question clé : ...
 
-## C. Ce qui pourrait poser problème
-Donner maximum 3 risques principaux.
+## B. Lecture économique de l'entreprise
+Explique simplement :
+- Comment l'entreprise gagne principalement de l'argent.
+- Si ses revenus semblent diversifiés ou dépendants d'un seul moteur.
+- Si sa rentabilité paraît forte, moyenne ou faible, en t'appuyant sur les marges disponibles.
+- Si sa situation financière paraît solide ou tendue, en t'appuyant sur dette, trésorerie, ROE, FCF ou liquidité.
+
+Ne dépasse pas 8 lignes.
+
+## C. Ce qui peut faire évoluer l'action
+Donne 3 facteurs maximum.
+
+Pour chaque facteur :
+- Pourquoi c'est important.
+- Ce qu'il faut surveiller concrètement.
+- Ce qui serait un signal positif.
+- Ce qui serait un signal négatif.
+
+Choisis uniquement les facteurs vraiment utiles pour cette société.
+
+## D. Risques à surveiller
+Donne 3 risques maximum.
+
 Pour chaque risque :
-- Risque clairement nommé.
-- Pourquoi ? 1 phrase.
-- Signal d'alerte : indicateur concret + source où le vérifier.
+- Pourquoi il compte.
+- Quel indicateur concret permet de le suivre.
+- Quel signal d'alerte l'investisseur doit repérer.
 
-## D. Ce que le marché surveille actuellement
-Donner maximum 3 priorités de surveillance.
-Pour chaque priorité :
-- Indicateur surveillé.
-- Ce qu'une bonne lecture signifierait.
-- Ce qu'une mauvaise lecture signalerait.
-Phrase courte, opérationnelle, sans jargon excessif.
+Évite les généralités.
 
-## E. Événements des 30 prochains jours
-Faire un tableau court avec maximum 5 événements.
-Colonnes : Date | Événement | Importance | Pourquoi cela compte.
-Après le tableau, ajouter 2 à 4 points que le marché vérifiera lors de l'événement principal.
+## E. Ce que le marché surveille maintenant
+Résume les 3 indicateurs les plus importants actuellement.
 
-## F. Synthèse opérationnelle
-- Ce qui soutient actuellement l'entreprise : 4 à 5 points courts.
-- Ce qui mérite une attention particulière : 3 à 4 points courts.
-- Les 3 éléments à surveiller en priorité : liste numérotée.
-- En une phrase : 3 à 4 lignes maximum qui résument le profil de l'entreprise, sa solidité, ses dépendances et ce qui peut modifier la perception du marché.
+Pour chaque indicateur :
+- Lecture positive.
+- Lecture négative.
+- Pourquoi cela peut influencer la valorisation.
 
-## Information importante
+## F. Événements à suivre
+Utilise uniquement les événements réellement pertinents dans les données fournies.
+
+Priorité :
+1. Résultats de l'entreprise.
+2. Guidance ou conférence investisseurs.
+3. Actualités sectorielles importantes.
+4. Événements macro majeurs uniquement s'ils peuvent influencer fortement cette action.
+
+Ne garde pas d'événement macro faible ou sans lien clair.
+Limite à 5 événements maximum.
+Si aucun événement pertinent n'est disponible, écris :
+"Aucun événement spécifique suffisamment pertinent n'est identifié dans les données disponibles."
+
+## G. Synthèse analytique
+En 5 lignes maximum :
+- Ce qui soutient l'action aujourd'hui.
+- Ce qui peut fragiliser la perception du marché.
+- Les 3 points à suivre en priorité.
+- Ce que l'investisseur doit clarifier avant de prendre sa propre décision.
+
+Termine exactement par :
 Cette analyse constitue une aide à la compréhension de l'entreprise et de son environnement. Elle ne constitue pas un conseil en investissement. Tout investissement en bourse comporte un risque de perte partielle ou totale du capital.
-
-CONTRAINTES STRICTES
-- Français simple, clair, premium.
-- Maximum 900 mots.
-- Phrases courtes.
-- Pas de longue introduction.
-- Pas de tableau sauf dans la section E.
-- Si une donnée manque, le dire proprement au lieu de l'inventer.
-- Ne pas parler d'analyse de portefeuille.
 """
 
     completion = client.chat.completions.create(
