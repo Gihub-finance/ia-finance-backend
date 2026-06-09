@@ -112,6 +112,9 @@ def fmp_get(endpoint: str, params: str = "") -> Any:
 
 
 def build_financial_scores(profile: Dict[str, Any], quote: Dict[str, Any], ratios: Dict[str, Any], metrics: Dict[str, Any]) -> Dict[str, Any]:
+
+    print("RATIOS =", ratios)
+    
     beta = safe_float(profile.get("beta"), 1)
     change = safe_float(quote.get("changesPercentage"))
     pe_ratio = safe_float(ratios.get("priceEarningsRatioTTM"))
@@ -406,16 +409,6 @@ CONTRAINTES STRICTES
         "analysis": analysis_text,
         "scores": scores,
         "badges": badges,
-        "events_30_days": events_30_days,
+        "events_30_days": events_10_days,
         "watch_sources": watch_sources,
-        "raw_data": {
-            "market_data": market_data,
-            "company_profile": company_profile,
-            "ratios_ttm": ratios_ttm,
-            "key_metrics_ttm": key_metrics_ttm,
-            "analyst_estimates": analyst_estimates,
-            "stock_news": stock_news,
-            "earnings_calendar": earnings_calendar,
-            "economic_calendar": economic_calendar,
-        },
     }
